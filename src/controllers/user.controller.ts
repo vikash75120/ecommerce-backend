@@ -1,12 +1,16 @@
-import { addUser, deleteUserById, fetchUserById, findUsers, updateUserField } from "../services/user.service";
-import { createUserSchema } from "../utils/zodValidation.js";
+import { addUser, deleteUserById, fetchUserByEmail, fetchUserById, findUsers, updateUserField } from "../services/user.service";
+import { createUserSchema } from "../utils/zodValidation";
 import { Request, Response } from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { toPublicUser } from "../utils/utils";
 
 type User = {
     id: number;
     name: string;
     email: string;
     phone: string;
+    createdAt: Date;
 }
 
 export const getAllUsers = async (req: Request, res: Response) => {
@@ -25,11 +29,25 @@ export const createUser = async(req: Request, res: Response)=>{
             res.status(400).json({error:{message:user.error.issues}});
             return;
         }
-        const userAdded: User = await addUser(user.data);
+
+        const existing = await fetchUserByEmail(user.data.email);
+        if(existing){
+            res.status(409).json({ error: { message: "Email already registered" } });
+            return;
+        }
+
+        const hashedPass = await bcrypt.hash(req.body.password, 10);
+        const newUserData = {
+            ...user.data,
+            password_hash: hashedPass
+        }
+        const userAdded: User = await addUser(newUserData);
         if(userAdded){
-            res.status(200).json({
+            const accessToken = jwt.sign({ userId: userAdded.id }, process.env.TOKEN_SECRET, { expiresIn: '1h' });
+            res.status(201).json({
                 message: "user created successfully",
-                user: userAdded
+                user: toPublicUser(userAdded),
+                accessToken: accessToken
             })
         }
     }catch(err){

@@ -12,6 +12,10 @@ export const fetchUserById = (id: number) => {
   return userRepository.findOneBy({ id });
 };
 
+export const fetchUserByEmail = (email: string) => {
+  return userRepository.findOneBy({ email });
+};
+
 export const addUser = (data: Partial<User>) => {
   const user = userRepository.create(data);
   return userRepository.save(user);

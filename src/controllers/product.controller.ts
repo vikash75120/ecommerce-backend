@@ -8,7 +8,6 @@ type Product = {
     price: number;
     stock_qty: number;
     brand: string;
-    status: string;
 }
 
 export const getAllProducts = async (req: Request, res: Response) => {

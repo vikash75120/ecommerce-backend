@@ -12,7 +12,7 @@ export class Product {
   @Column()
   description!: string;
 
-  @Column()
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   price!: number;
 
   @Column()
@@ -20,7 +20,4 @@ export class Product {
 
   @Column()
   brand!: string;
-
-  @Column()
-  status!: string;
 }
