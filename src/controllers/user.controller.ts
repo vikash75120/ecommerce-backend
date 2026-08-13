@@ -1,5 +1,5 @@
-import { addUser, deleteUserById, fetchUserByEmail, fetchUserById, findUsers, updateUserField } from "../services/user.service";
-import { createUserSchema } from "../utils/zodValidation";
+import { addUser, deleteUserById, fetchUserByEmail, fetchUserById, fetchUserWithPass, findUsers, updateUserField } from "../services/user.service";
+import { createUserSchema, loginUserSchema } from "../utils/zodValidation";
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -89,5 +89,35 @@ export const deleteUser = async(req: Request, res: Response)=>{
         res.status(200).json(user);
     }catch(err){
         res.status(500).json({error:{message:"Something went wrong while deleting the user"}});
+    }
+}
+
+export const loginUser = async(req: Request, res: Response)=>{
+    try{
+        const user = loginUserSchema.safeParse(req.body);
+        if(!user.success){
+            res.status(400).json({error:{message:user.error.issues}});
+            return;
+        }
+
+        const existing = await fetchUserWithPass(user.data.email);
+        if(!existing){
+            res.status(401).json({ error: { message: "Invalid email or password" } });
+            return;
+        }
+
+        const match = await bcrypt.compare(req.body.password, existing.password_hash);
+        
+        if(match){
+            const accessToken = jwt.sign({userId: existing.id}, process.env.TOKEN_SECRET, { expiresIn: '1h' })
+            res.status(200).json({
+                message: "user created successfully",
+                accessToken: accessToken
+            })
+        }else{
+            res.status(401).json({ error: { message: "Invalid email or password" } });
+        }
+    }catch(err){
+        res.status(500).json({error:{message:"Something went wrong while logging in the user"}});
     }
 }
