@@ -32,6 +32,15 @@ export const deleteUserById = async (id: number) => {
   return user;
 };
 
-export const fetchUserWithPass = async(email: string)=>{
-  return userRepository.findOne({where:{email}, select: ['id', 'name', 'email', 'phone', 'password_hash']});
-}
+export const fetchUserWithPass = async (email: string) => {
+  return userRepository.findOne({
+    where: { email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      password_hash: true,
+    },
+  });
+};
