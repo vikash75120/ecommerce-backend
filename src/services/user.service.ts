@@ -41,6 +41,7 @@ export const fetchUserWithPass = async (email: string) => {
       email: true,
       phone: true,
       password_hash: true,
+      role: true
     },
   });
 };

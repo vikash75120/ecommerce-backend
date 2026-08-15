@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { AuthPayload } from '../types/express';
 
 export const authCheck = (req: Request, res: Response, next: NextFunction) => {
   const bearerToken = req.headers.authorization;
@@ -12,7 +13,7 @@ export const authCheck = (req: Request, res: Response, next: NextFunction) => {
 
   const token = bearerToken.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, process.env.TOKEN_SECRET!);
+    const decoded = jwt.verify(token, process.env.TOKEN_SECRET!) as AuthPayload;
     console.log('testing decoded: ', decoded);
     req.user = decoded;
     next();

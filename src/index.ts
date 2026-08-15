@@ -2,7 +2,8 @@
 import 'reflect-metadata';
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import user from './routes/user.route';
+import userRouter from './routes/user.route';
+import productRouter from './routes/product.route';
 import { AppDataSource } from './data-source';
 import { createUser, loginUser } from './controllers/user.controller';
 import { authCheck } from './middlewares/authCheck';
@@ -22,10 +23,8 @@ app.use(express.urlencoded({ extended: true }));
 app.post('/register', createUser);
 app.post('/login', loginUser);
 
-app.use(authCheck);
-
-app.use('/users', user);
-
+app.use('/users', authCheck, userRouter);
+app.use('/products', productRouter);
 
 AppDataSource.initialize()
   .then(() => {
