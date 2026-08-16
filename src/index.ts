@@ -7,6 +7,9 @@ import productRouter from './routes/product.route';
 import { AppDataSource } from './data-source';
 import { createUser, loginUser } from './controllers/user.controller';
 import { authCheck } from './middlewares/authCheck';
+import helmet from 'helmet';
+import cors from 'cors';
+import { loginLimiter } from './middlewares/loginLimiter';
 
 dotenv.config();
 
@@ -17,11 +20,18 @@ if (!process.env.TOKEN_SECRET) {
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+app.use(helmet());
+app.use(
+  cors({
+    origin: ['http://localhost:8000'],
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.post('/register', createUser);
-app.post('/login', loginUser);
+app.post('/login', loginLimiter, loginUser);
 
 app.use('/users', authCheck, userRouter);
 app.use('/products', productRouter);
