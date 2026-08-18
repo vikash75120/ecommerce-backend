@@ -5,28 +5,30 @@ import { redisClient } from '../utils/redis';
 
 const userRepository = AppDataSource.getRepository(User);
 const cacheKey = (key: number) => `user:${key}`;
-const CACHE_TTL_SECONDS = 300;
+// const CACHE_TTL_SECONDS = 300;
+const CACHE_TTL_SECONDS = 5; //for testing
 
-export const findUsers = async() => {
+export const findUsers = async () => {
   return await userRepository.find();
 };
 
-export const fetchUserById = async(id: number) => {
+export const fetchUserById = async (id: number) => {
   const cached = await redisClient.get(cacheKey(id));
-  if(cached){
+  if (cached) {
     return cached;
   }
-  const user =  await userRepository.findOneBy({ id });
-  if(!user) return null;
+  const user = await userRepository.findOneBy({ id });
+  if (!user) return null;
 
-  await redisClient.set(cacheKey(id), JSON.stringify(user), "EX", CACHE_TTL_SECONDS);
+  await redisClient.set(cacheKey(id), JSON.stringify(user), 'EX', CACHE_TTL_SECONDS);
+  return user;
 };
 
-export const fetchUserByEmail = async(email: string) => {
+export const fetchUserByEmail = async (email: string) => {
   return await userRepository.findOneBy({ email });
 };
 
-export const addUser = async(data: Partial<User>) => {
+export const addUser = async (data: Partial<User>) => {
   const user = await userRepository.create(data);
   return userRepository.save(user);
 };
@@ -42,7 +44,6 @@ export const deleteUserById = async (id: number) => {
   if (user) {
     await userRepository.remove(user);
     await redisClient.del(cacheKey(id));
-
   }
   return user;
 };
@@ -56,7 +57,7 @@ export const fetchUserWithPass = async (email: string) => {
       email: true,
       phone: true,
       password_hash: true,
-      role: true
+      role: true,
     },
   });
 };
