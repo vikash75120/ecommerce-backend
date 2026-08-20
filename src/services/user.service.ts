@@ -6,7 +6,7 @@ import { redisClient } from '../utils/redis';
 const userRepository = AppDataSource.getRepository(User);
 const cacheKey = (key: number) => `user:${key}`;
 // const CACHE_TTL_SECONDS = 300;
-const CACHE_TTL_SECONDS = 5; //for testing
+const CACHE_TTL_SECONDS = 30; //for testing
 
 export const findUsers = async () => {
   return await userRepository.find();
@@ -15,7 +15,8 @@ export const findUsers = async () => {
 export const fetchUserById = async (id: number) => {
   const cached = await redisClient.get(cacheKey(id));
   if (cached) {
-    return cached;
+    console.log('testing redis data: ', cached);
+    return JSON.parse(cached);
   }
   const user = await userRepository.findOneBy({ id });
   if (!user) return null;

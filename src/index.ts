@@ -10,6 +10,7 @@ import { authCheck } from './middlewares/authCheck';
 import helmet from 'helmet';
 import cors from 'cors';
 import { loginLimiter } from './middlewares/loginLimiter';
+import { logger } from './utils/logger';
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ app.use('/products', productRouter);
 
 AppDataSource.initialize()
   .then(() => {
-    console.log('Database connected');
-    app.listen(PORT, () => console.log('Server running on port 8000'));
+    logger.info('Database connected');
+    app.listen(PORT, () => logger.info({ PORT }, 'Server started'));
   })
-  .catch((err) => console.error('Error during Data Source initialization:', err));
+  .catch((err) => logger.error({ err }, `Error during Data Source initialization}`));
